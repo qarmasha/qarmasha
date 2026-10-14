@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>قرمشة | المنيو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=El+Messiri:wght@500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --surface:#FFFFFF; --text:#2B1B12; --muted:#8A7461;
+  --accent:#8B2E2E; --accent2:#B9822E; --border:#ECE1CC; --chipbg:#F7F0E2;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+html{scroll-padding-top:130px}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:'Tajawal',sans-serif;
+  padding-top:env(safe-area-inset-top,0);
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+header{
+  position:sticky;top:0;z-index:5;background:var(--bg);
+  padding:calc(14px + env(safe-area-inset-top,0)) 16px 10px;
+  border-bottom:1px dashed var(--border);
+}
+.brand{display:flex;align-items:center;gap:8px}
+.bean{width:24px;height:24px;flex:0 0 auto;fill:var(--accent)}
+h1{font-family:'Aref Ruqaa',serif;font-weight:700;font-size:32px;margin:0;color:var(--accent);line-height:1}
+.sub{color:var(--muted);font-size:12.5px;margin:6px 0 12px}
+.searchwrap{position:relative}
+#q{
+  width:100%;padding:12px 40px 12px 14px;border-radius:12px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);font-family:inherit;font-size:16px;
+}
+#q:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#clear{
+  position:absolute;left:8px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;
+  display:none;padding:6px;line-height:1;
+}
+#clear:focus-visible{outline:2px solid var(--accent)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;padding:7px 14px;border-radius:999px;background:var(--chipbg);
+  color:var(--text);font-size:13.5px;font-weight:500;border:1px solid transparent;
+  cursor:pointer;white-space:nowrap;font-family:inherit;
+}
+.chip.active{background:var(--accent);color:#fff}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+main{max-width:760px;margin:0 auto;padding:8px 16px 40px}
+.section{scroll-margin-top:136px;margin-top:22px}
+.section h2{
+  font-family:'El Messiri',serif;font-size:17px;margin:0 0 8px;
+  display:flex;align-items:baseline;gap:8px;
+}
+.section h2 small{color:var(--muted);font-weight:400;font-size:12.5px}
+.list{border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);min-height:52px}
+.row:last-child{border-bottom:none}
+.name{font-weight:500;font-size:14.5px;line-height:1.35}
+.price{text-align:left;flex:0 0 auto}
+.amt{font-weight:700;color:var(--accent2);font-size:14.5px;white-space:nowrap}
+.amt.na{font-size:12px;font-weight:500;color:var(--muted)}
+.unit{color:var(--muted);font-size:11px}
+#count{color:var(--muted);font-size:12.5px;margin:0 0 8px}
+#empty{display:none;text-align:center;color:var(--muted);padding:40px 10px;font-size:14px}
+@media(min-width:640px){
+  .list{display:grid;grid-template-columns:1fr 1fr}
+  .row{border-inline-start:1px solid var(--border)}
+  .row:nth-child(odd){border-inline-start:none}
+}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="bean" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9" ry="11" transform="rotate(-18 12 12)"/><path d="M12 2c-2.3 4.3-2.3 8.3 0 10.6.2.2.2 6.8 0 9.4" stroke="var(--bg)" stroke-width="1.6" fill="none" transform="rotate(-18 12 12)"/></svg>
+    <h1>قرمشة</h1>
+  </div>
+  <p class="sub">مكسرات، قهوة، وقرمشة محمصة طازة — ابحث بالاسم أو تصفح الأقسام</p>
+  <div class="searchwrap">
+    <input id="q" type="search" placeholder="اكتب اسم الصنف…" autocomplete="off">
+    <button id="clear" aria-label="مسح البحث">×</button>
+  </div>
+  <nav class="chips" id="chips"></nav>
+</header>
+<main>
+  <div id="results">
+    <p id="count"></p>
+    <div class="list" id="resultsList"></div>
+    <p id="empty">لا يوجد صنف بهذا الاسم</p>
+  </div>
+  <div id="menu"></div>
+</main>
+<script>
+const CATS=["شيبس ومقرمشات","ويفر وبسكويت","عسل ودبس وتمر","مكسرات وفواكه مجففة","حلويات وشوكولاتة","مشروبات وأعشاب","مكسرات محمصة ومملحة","لب ومقرمشات محمصة","بن وقهوة","مشروبات ساخنة بالكوب","نكهات بوظة بالكيلو","آيس كريم"];
+const DATA=[
+["ميجا شيبس كريمة بصل و بطاطس",45,0,0],["ميجا شيبس كباب",45,0,0],["ميجا شيبس فراخ",45,0,0],
+["ميجا شيبس أستاكوزا",45,0,0],["ميجا شيبس شطة و ليمون",45,0,0],["كريسي شوكولا",25,0,0],
+["كريسي فراولة",25,0,0],["برنجلز ملح كبير",155,0,0],["برنجلز شطة حار كبير",155,0,0],
+["برنجلز كريمة بصل و ليمون كبير",155,0,0],["برنجلز كاتشب كبير",155,0,0],
+["برنجلر شطة و ليمون صغير",55,0,0],["برنجلر باربيكيو صغير",55,0,0],
+["برنجلر كريمة بصل و ليمون صغير",55,0,0],["برنجلر جبنة صغير",55,0,0],
+["ويفر روس بندق",50,0,1],["ويفر روس اسبريسو",50,0,1],["ويفر روس شوكولا و كريمة",50,0,1],
+["ويفر روس كاكاو",50,0,1],["بسكويت قهوة",30,0,1],["بسكويت كوتو",300,1,1],["ويفر برطمان",27,0,1],
+["بسكويت شوكولاته",0,1,1],["بسكويت",290,1,1],
+["مختوم فلسطيني 1 ك",700,0,2],["عسل مكسرات 600 جرام",350,0,2],["اكسيد القهوة 350 جرام",550,0,2],
+["عسل برسيم 500 جرام",250,0,2],["عسل برسيم 1 كيلو",390,0,2],["دبس تمر 350 جرام",190,0,2],
+["تمر فاكيوم 900 جرام",230,0,2],["رطب سكري",230,1,2],["مجدول سكري",240,1,2],
+["تمر مجدول مصري",220,1,2],["تمر مجدول اردني",650,1,2],["تمر مفروم 1 ك",230,1,2],["تمر المدينة",420,1,2],
+["زبدة فول سوداني 300 جرام",110,0,3],["فواكه مجففه مكس بالتبريد",2200,1,3],["باشن فروت مجفف",2200,1,3],
+["خضار مجفف",2200,1,3],["سوداني سمسم",180,1,3],["كيوي مجفف",180,1,3],["مانجا مجففة",0,1,3],
+["زبيب بلدي أحمر",250,1,3],["زبيب بلدي أسود",250,1,3],["زبيب بلدي أصفر",290,1,3],
+["توفي",160,1,4],["جيلي",250,1,4],["جيلي بينز",400,1,4],["جيلي ديلوس",300,1,4],
+["كاندي كولا",300,1,4],["شيكورول",210,1,4],["توفي الشمع",460,1,4],["كاندي شرايط",250,1,4],
+["بريتزل",145,1,4],["مارشميلو اسباني",260,1,4],["شوكولا روشيه بالمكسرات",0,1,4],
+["شوكولا بندقتين حليب",0,1,4],["شوكولا كريم كراميل حليب",0,1,4],["شوكولا عادة حليب",0,1,4],
+["من و سلوى",0,1,4],["من وسلوى فستق",700,1,4],["ملبن موجه فستق قروش كبيرة",0,1,4],
+["نوجا فول وسط",190,1,4],["سمسمية",230,1,4],["نوجا فستق وسط",750,1,4],["بنيون قهوة",225,1,4],
+["كاندي مانجا",300,1,4],["بطرمان مانجا قطع",370,1,4],
+["متة الخارطة",140,0,5],["متة بيبوري",140,0,5],
+["كاجو عادي",990,1,6],["كاجو بني",800,1,6],["مشكل مكسرات بدون ليمون",950,1,6],
+["مشكل مكسرات مالح",950,1,6],["فستق إيراني ليمون",1250,1,6],["فستق أمريكي مالح",1050,1,6],
+["فستق أمريكي",1050,1,6],["لوز ليمون",800,1,6],["لوز مدخن",750,1,6],["لوز مالح",800,1,6],
+["لوز ني",900,1,6],["لوز محمص",850,1,6],["عين جمل",750,1,6],["بندق أبيض محمص",1050,1,6],
+["سوداني إسباني",245,1,6],["سوداني مالح",245,1,6],["سوداني مدخن",245,1,6],["صيني مالح",325,1,6],
+["صيني ميكس",300,1,6],["كاجو باربيكو",230,1,6],["كاجو جبنة",230,1,6],["كاجو شطة",230,1,6],
+["كاجو كاتشب",230,1,6],["بيكان مقشر",1600,1,6],["مكاديميا بقشرة",1400,1,6],["بيكان بقشرة",1350,1,6],
+["لوز برازيلي",3500,1,6],
+["حمص شامي",300,1,7],["ذرة إسباني مالح",210,1,7],["ذرة إسباني جبنة",210,1,7],
+["لب سوبر مالح",265,1,7],["لب سوبر مالح",180,1,7],["لب سوري بلا ملح",190,1,7],
+["لب سوري جبنة",200,1,7],["لب سوري شطة",200,1,7],["لب سوري باربيكو",200,1,7],
+["لب سوري مقشر جبنة",245,1,7],["لب سوري مقشر خل",245,1,7],["لب كوسة",370,1,7],
+["لب أبيض قرع",390,1,7],["لب أبيض قرع بلا ملح",390,1,7],["لب بطيخ إيراني",300,1,7],
+["مقرمشات ميكس",150,1,7],["كونو سناكس نكهات",150,1,7],["روستيكا سناكس نكهات",150,1,7],
+["بذور بطيخ",480,1,7],
+["بن فاتح",700,1,8],["بن وسط",750,1,8],["بن سريسو",850,1,8],["بن غامق",750,1,8],
+["قهوة بندق",750,1,8],["هيل محمص",1800,1,8],["نسكافيه جولد",1600,1,8],["نسكافيه كلاسيك",1250,1,8],
+["هوت شوكليت",400,1,8],
+["كوب قهوة سنجل",15,0,9],["كوب قهوة دبل",20,0,9],["كوب قهوة فرنساوي",35,0,9],
+["كوباية نسكافيه",35,0,9],["كوباية كابتشينو",35,0,9],["كوباية موكا",40,0,9],
+["كوباية هوت شوكليت",35,0,9],["كوباية إسبريسو سنجل",25,0,9],["كوباية إسبريسو دبل",30,0,9],
+["كوباية لاتيه",35,0,9],
+["فستق أخضر إيطالي",415,1,10],["مكسرات إكسترا",415,1,10],["سنكرز كاجو",290,1,10],
+["لوتس بلجيكي",290,1,10],["مانجا إكسترا",290,1,10],["فراولة إكسترا",290,1,10],
+["ليمون إيطالي",290,1,10],["لبان إيطالي",290,1,10],["زبادي توت",290,1,10],
+["فانيليا سبشيال",290,1,10],["فانيليا أوريو إكسترا",290,1,10],["شوكولاتة نوتيلا",290,1,10],
+["بوظة عربي قشطة وفستق",400,1,10],
+["كونو بسكويت آيس كريم",3,0,11],["بولة فستق أخضر إيطالي",35,0,11],["بولة فستق إكسترا",35,0,11],
+["بولة سنكرز كاجو",30,0,11],["بولة لوتس بلجيكي",30,0,11],["بولة مانجا إكسترا",30,0,11],
+["بولة فراولة إكسترا",30,0,11],["بولة ليمون إيطالي",30,0,11],["بولة لبان إيطالي",30,0,11],
+["بولة زبادي توت",30,0,11],["بولة فانيليا سبشيال",30,0,11],["بولة فانيليا أوريو إكسترا",30,0,11],
+["بولة شوكولاتة نوتيلا",30,0,11],["بولة ميكس",40,0,11]
+];
+
+function norm(s){
+  return s.replace(/[\u064B-\u0652]/g,'').replace(/[إأآا]/g,'ا')
+    .replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[ؤئ]/g,'ي').trim().toLowerCase();
+}
+function fmtPrice(p){return p===0?'<span class="amt na">عند الطلب</span>':'<span class="amt">'+p+' ج.م</span>';}
+function unitLabel(u){return u===0?'للقطعة':'للكيلو';}
+function rowHTML(item){
+  const [name,price,unit]=item;
+  return '<div class="row"><div class="name">'+name+'</div><div class="price">'+fmtPrice(price)+
+    '<div class="unit">'+unitLabel(unit)+'</div></div></div>';
+}
+
+const menuEl=document.getElementById('menu');
+CATS.forEach((cat,ci)=>{
+  const items=DATA.filter(d=>d[3]===ci);
+  const sec=document.createElement('div');
+  sec.className='section';sec.id='cat-'+ci;
+  sec.innerHTML='<h2>'+cat+' <small>('+items.length+')</small></h2><div class="list">'+
+    items.map(rowHTML).join('')+'</div>';
+  menuEl.appendChild(sec);
+});
+
+const chipsEl=document.getElementById('chips');
+chipsEl.innerHTML='<button class="chip active" data-t="top">الكل</button>'+
+  CATS.map((c,i)=>'<button class="chip" data-t="cat-'+i+'">'+c+'</button>').join('');
+chipsEl.addEventListener('click',e=>{
+  const b=e.target.closest('.chip');if(!b)return;
+  const t=b.dataset.t;
+  if(t==='top'){window.scrollTo({top:0,behavior:'smooth'});}
+  else{document.getElementById(t).scrollIntoView({behavior:'smooth',block:'start'});}
+});
+const chipButtons=[...chipsEl.children];
+const sections=[...document.querySelectorAll('.section')];
+if('IntersectionObserver' in window){
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        const idx=sections.indexOf(en.target);
+        chipButtons.forEach(b=>b.classList.remove('active'));
+        (chipButtons[idx+1]||chipButtons[0]).classList.add('active');
+      }
+    });
+  },{rootMargin:'-120px 0px -70% 0px'});
+  sections.forEach(s=>io.observe(s));
+}
+
+const q=document.getElementById('q'),clearBtn=document.getElementById('clear');
+const resultsWrap=document.getElementById('results'),resultsList=document.getElementById('resultsList');
+const countEl=document.getElementById('count'),emptyEl=document.getElementById('empty');
+
+function runSearch(){
+  const raw=q.value.trim();
+  clearBtn.style.display=raw?'block':'none';
+  if(!raw){resultsWrap.style.display='none';menuEl.style.display='block';chipsEl.style.display='flex';return;}
+  chipsEl.style.display='none';menuEl.style.display='none';resultsWrap.style.display='block';
+  const nq=norm(raw);
+  const found=DATA.filter(d=>norm(d[0]).includes(nq));
+  countEl.textContent=found.length+' نتيجة';
+  resultsList.innerHTML=found.map(rowHTML).join('');
+  emptyEl.style.display=found.length?'none':'block';
+  resultsList.style.display=found.length?'':'none';
+}
+q.addEventListener('input',runSearch);
+clearBtn.addEventListener('click',()=>{q.value='';runSearch();q.focus();});
+resultsWrap.style.display='none';
+</script>
+</body>
+</html>
